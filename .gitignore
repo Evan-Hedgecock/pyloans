@@ -1,5 +1,5 @@
 # Database file
-loan.db
+loans.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

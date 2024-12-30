@@ -1,8 +1,9 @@
+import loan
 import sys
 
 def main():
 
-    
+    loan.loadLoans()
 
     print('Welcome to your loan manager!\n\nWhat would you like to do?')
     print()
@@ -23,6 +24,7 @@ def main():
                 selection = int(input('Enter menu number: '))
             except:
                 continue
+
 
 def printMenu():
      print('1) View Loans\n' +
