@@ -2,14 +2,12 @@ from loan import Loan
 import sqlite3
 
 def main():
-
-    loadLoans()
-
     print('Welcome to your loan manager!\n\nWhat would you like to do?')
     print()
-    selection = -1
 
-    while(selection < 1 or selection > 5):
+    while(True):
+        loans = loadLoans()
+        selection = -1
         try:
             printMenu()
             print()
@@ -25,8 +23,14 @@ def main():
             except:
                 continue
 
-    if selection == 2:
-        addLoan()
+        if selection == 1:
+            viewLoans(loans)
+
+        if selection == 2:
+            addLoan()
+        
+        if selection == 5:
+            break
 
 
 def printMenu():
@@ -35,6 +39,17 @@ def printMenu():
            '3) Edit Loans\n' +
            '4) Simulate Loan Payments\n' +
            '5) Quit')
+
+def viewLoans(loans):
+    totalBalance = 0
+    print('id | name | balance | percent')
+    for loan in loans:
+        totalBalance += loan.getBalance()
+        print(f'{loan.id} | {loan.name} | ${loan.getBalance()} | {loan.percent}%')
+    print(f'\nTotal balance: ${totalBalance}')
+    print()
+        
+
 
 def addLoan():
     name = None
@@ -93,6 +108,7 @@ def addLoan():
 
     loan = Loan(name, amount, percent, interest, expense)
     print(f'Created new loan:\n{loan}')
+    print()
     saveLoan(loan)
 
 
@@ -115,16 +131,17 @@ def loadLoans():
            )
     ''')    
 
+    loans = []
     for row in cur.execute('SELECT * FROM loans'):
-        print(row)
+        loans.append(Loan(row[1], row[2], row[3], row[4], row[5], row[0]))
 
+    return loans
+        
 def saveLoan(loan):
     con = sqlite3.connect('loans.db')
     cur = con.cursor()
-
     cur.execute('INSERT INTO loans(name, principal, interest, expense, percent, lastUpdate)' +
                 ' VALUES(?, ?, ?, ?, ?, ?)', loan.dataArray())
-
     con.commit()
 
 

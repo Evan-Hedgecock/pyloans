@@ -2,7 +2,7 @@ import datetime
 
 class Loan:
  
-    def __init__(self, name, amount, percent, interest, expense):
+    def __init__(self, name, amount, percent, interest, expense, loanId=None):
         self.name = name
         self.principal = amount
 
@@ -23,6 +23,7 @@ class Loan:
         
         # Used to track amount of days to accrue interest
         self.lastUpdate = datetime.date.today()
+        self.id = loanId
         
     def __str__(self):
         total = self.getBalance()
