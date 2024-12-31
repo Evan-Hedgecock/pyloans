@@ -28,14 +28,16 @@ def main():
 
         if selection == 2:
             addLoan()
+
+        if selection == 3:
+            editLoans(loans)
         
         if selection == 5:
             break
 
-
 def printMenu():
      print('1) View Loans\n' +
-           '2) Add Loans\n' +
+           '2) Add Loan\n' +
            '3) Edit Loans\n' +
            '4) Simulate Loan Payments\n' +
            '5) Quit')
@@ -48,8 +50,108 @@ def viewLoans(loans):
         print(f'{loan.id} | {loan.name} | ${loan.getBalance()} | {loan.percent}%')
     print(f'\nTotal balance: ${totalBalance}')
     print()
-        
 
+def editLoans(loans):
+    viewLoans(loans)
+    selection = None
+    editing = None
+    while selection == None or editing == None:
+        try:
+            selection = int(input('Enter the id of which loan you would like to edit: '))
+        except:
+            print('Only enter the id number')
+            selection = None
+        
+        for loan in loans:
+            if selection == int(loan.id):
+                editing = loan
+                break
+        if editing == None:
+            print('Entered id doesn\'t exist')
+            viewLoans(loans)
+    print(f'Editing loan: {editing}')
+
+    name = None
+    principal = None
+    percent = None
+    interest = None
+    expense = None
+
+    name = input(f'Enter loan name: [{editing.name}] ')
+
+    while principal == None:
+        try:
+            principal = input(f'Enter principal balance: [{editing.principal}] ')
+            if principal != '':
+                principal = float(principal)
+        except:
+            if principal != '':
+                print('Invalid value entered, make sure it your entry keeps the same format as inside []')
+                principal = None
+    while percent == None:
+        try:
+            percent = input(f'Enter interest rate: [{editing.percent}] ')
+            if percent != '':
+                percent = float(percent)
+        except:
+            if percent != '':
+                print('Invalid value entered, make sure it your entry keeps the same format as inside []')
+                percent = None
+    while interest == None:
+        try:
+            interest = input(f'Enter accrued interest: [{editing.interest}] ')
+            if interest != '':
+                interest = float(interest)
+        except:
+            if interest != '':
+                print('Invalid value entered, make sure it your entry keeps the same format as inside []')
+                interest = None
+    while expense == None:
+        try:
+            expense = input(f'Enter interest expense: [{editing.expense}] ')
+            if expense != '':
+                expense = float(expense)
+        except:
+            if expense != '':
+                print('Invalid value entered, make sure it your entry keeps the same format as inside []')
+                expense = None
+
+    if name != '':
+        editing.name = name
+    if principal != '':
+        editing.principal = principal
+    if percent != '':
+        editing.percent = percent
+    if interest != '':
+        editing.interest = interest
+    if expense != '':
+        editing.expense = expense
+
+    print(f'''Edited loan: 
+          Name: {editing.name}
+          Principal: {editing.principal}
+          Percent: {editing.percent}
+          Accrued Interest: {editing.interest}
+          Interest Expense: {editing.expense}
+          ''')
+    save = input('Would you like to save these changes? [y/N] ')
+    if save.lower() == 'y':
+        data = [editing.name, editing.principal, editing.percent,
+                editing.interest, editing.expense, editing.id]
+
+        con = sqlite3.connect('loans.db')
+        cur = con.cursor()
+
+        cur.execute('''
+        UPDATE loans
+        SET name = ?,
+            principal = ?,
+            percent = ?,
+            interest = ?,
+            expense = ?
+        WHERE id = ?
+        ''', data)
+        con.commit()
 
 def addLoan():
     name = None
