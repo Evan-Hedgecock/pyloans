@@ -1,8 +1,9 @@
 import datetime
+import sqlite3
 
 class Loan:
  
-    def __init__(self, name, amount, percent, interest, expense, loanId=None):
+    def __init__(self, name, amount, interest, expense, percent, lastUpdate=None, loanId=None):
         self.name = name
         self.principal = amount
 
@@ -22,7 +23,19 @@ class Loan:
             self.expense = expense 
         
         # Used to track amount of days to accrue interest
-        self.lastUpdate = datetime.date.today()
+        if lastUpdate == None:
+            self.lastUpdate = datetime.date.today()
+        else:
+            date = ['', '', '']
+            i = 0 
+            for c in lastUpdate:
+                if c == '-':
+                    i += 1
+                else:
+                    date[i] += c
+            self.lastUpdate = datetime.date(int(date[0]), int(date[1]), int(date[2]))
+                
+
         self.id = loanId
         
     def __str__(self):
@@ -51,13 +64,36 @@ class Loan:
             accrueDays = days
 
         for i in range(accrueDays):
-            dailyInterest = (self.principal * self.percent) / 365
+            dailyInterest = (self.principal * (self.percent / 100)) / 365
+            dailyInterest = int(dailyInterest * 100) / 100 # Truncate to two decimal places without rounding
             self.interest += dailyInterest
             self.expense += dailyInterest
+            self.interest = float(f'{self.interest:.2f}')
+            self.expense = float(f'{self.expense:.2f}')
+        self.lastUpdate = today
+        self.updateLoan()
    
     def getBalance(self):
         return self.principal + self.interest
 
     def dataArray(self):
-        return [self.name, self.principal, self.percent,
-                self.interest, self.expense, str(self.lastUpdate)]
+        return [self.name, self.principal, self.interest,
+                self.expense, self.percent, str(self.lastUpdate)]
+
+    def updateLoan(self):
+        data = [self.name, self.principal, self.percent,
+                self.interest, self.expense, self.lastUpdate, self.id]
+        con = sqlite3.connect('loans.db')
+        cur = con.cursor()
+
+        cur.execute('''
+        UPDATE loans
+        SET name = ?,
+            principal = ?,
+            percent = ?,
+            interest = ?,
+            expense = ?,
+            lastUpdate = ?
+        WHERE id = ?
+        ''', data)
+        con.commit()

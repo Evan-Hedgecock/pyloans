@@ -2,6 +2,10 @@ from loan import Loan
 import sqlite3
 
 def main():
+    # Accrue interest on each loan when loading program
+    loans = loadLoans()
+    for loan in loans:
+        loan.accrueInterest()
     print('Welcome to your loan manager!\n\nWhat would you like to do?')
     print()
 
@@ -136,22 +140,8 @@ def editLoans(loans):
           ''')
     save = input('Would you like to save these changes? [y/N] ')
     if save.lower() == 'y':
-        data = [editing.name, editing.principal, editing.percent,
-                editing.interest, editing.expense, editing.id]
-
-        con = sqlite3.connect('loans.db')
-        cur = con.cursor()
-
-        cur.execute('''
-        UPDATE loans
-        SET name = ?,
-            principal = ?,
-            percent = ?,
-            interest = ?,
-            expense = ?
-        WHERE id = ?
-        ''', data)
-        con.commit()
+        editing.updateLoan()
+        
 
 def addLoan():
     name = None
@@ -202,13 +192,14 @@ def addLoan():
                 expense = None
                 print('\nInvalid entery, only valid decimal point values allowed')
     else:
-        print('Setting interest expense to 0')
+        expense = interest
+        print(f'Setting interest expense to {interest}')
         print('You can add any past paid interest to this loan later\n')
 
     if interest != None:
         amount -= interest
 
-    loan = Loan(name, amount, percent, interest, expense)
+    loan = Loan(name, amount, interest, expense, percent)
     print(f'Created new loan:\n{loan}')
     print()
     saveLoan(loan)
@@ -235,8 +226,7 @@ def loadLoans():
 
     loans = []
     for row in cur.execute('SELECT * FROM loans'):
-        loans.append(Loan(row[1], row[2], row[3], row[4], row[5], row[0]))
-
+        loans.append(Loan(row[1], row[2], row[3], row[4], row[5], row[6], row[0]))
     return loans
         
 def saveLoan(loan):
